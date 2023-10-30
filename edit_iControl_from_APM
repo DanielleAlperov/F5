@@ -2,7 +2,7 @@ when ACCESS_POLICY_AGENT_EVENT {
   if { [ACCESS::policy agent_id] eq "addIP"} {
     set fullRequest "\{\"records\": \["
     set recordRequest ""
-    set status [call /Common/HSSR::http_req -state hstate -uri "http://127.0.0.1:8100/mgmt/tm/ltm/data-group/internal/~Common~My_DG" -method GET -type "application/json; charset=utf-8" -rbody rbody -userid danielle -passwd Dandan4693dd ]
+    set status [call /Common/HSSR::http_req -state hstate -uri "http://127.0.0.1:8100/mgmt/tm/ltm/data-group/internal/~Common~My_DG" -method GET -type "application/json; charset=utf-8" -rbody rbody -userid <USER> -passwd <PASSWORD> ]
     set dgRecords [split [findstr $rbody "records" 9 "]" ] ,]
     set num 0
     set newNum 0
