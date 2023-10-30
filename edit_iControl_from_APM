@@ -1,0 +1,54 @@
+when ACCESS_POLICY_AGENT_EVENT {
+  if { [ACCESS::policy agent_id] eq "addIP"} {
+    set fullRequest "\{\"records\": \["
+    set recordRequest ""
+    set status [call /Common/HSSR::http_req -state hstate -uri "http://127.0.0.1:8100/mgmt/tm/ltm/data-group/internal/~Common~My_DG" -method GET -type "application/json; charset=utf-8" -rbody rbody -userid danielle -passwd Dandan4693dd ]
+    set dgRecords [split [findstr $rbody "records" 9 "]" ] ,]
+    set num 0
+    set newNum 0
+	set User_IPaddress [ACCESS::session data get session.logon.last.ip]
+	log local0. "IP to add: $User_IPaddress"
+	# Handle IP format Errors
+    if { [catch {set match [matchclass $User_IPaddress equals My_DG] } ] }{ 
+    #log local0. "catched"
+    ACCESS::session data set session.custom.added.ip "Eror"
+    return
+    }
+   	# Compare the user ip against the DG
+    if { $match } {
+    log local0. "The $User_IPaddress is alredy in the DG"
+    ACCESS::session data set session.custom.ip.exist "Yes"
+    }
+    else {
+    # Don't found a match.
+    ACCESS::session data set session.custom.ip.exist "No"
+    log local0. " Is the IP was on the DG?  [ACCESS::session data get "session.custom.ip.exist"]"
+    foreach record $dgRecords {
+    if {$record contains "name"}{incr num}
+    }
+    foreach record $dgRecords {
+        if {$record contains "name"}{
+        incr newNum
+        set record [lindex [split "$record" ":"] 1]
+        if {$newNum < $num}{ append fullRequest "\{\"name\": $record, \"data\": \"\"\}," }
+        else { append fullRequest "\{\"name\": $record, \"data\": \"\"\}" }
+    }
+    }
+    append fullRequest ",\{\"name\": \"$User_IPaddress\", \"data\": \"\"\}\]\}"
+
+    set status [call /Common/HSSR::http_req -state hstate -uri "http://127.0.0.1:8100/mgmt/tm/ltm/data-group/internal/~Common~My_DG" -method PATCH -type "application/json; charset=utf-8" -body $fullRequest -rbody rbody -userid danielle -passwd Dandan4693dd ]
+
+    if {$rbody contains "errorStack" } {
+    ACCESS::session data set session.custom.added.ip "No"
+    }
+    else {
+     ACCESS::session data set session.custom.added.ip "Yes"
+    }
+    log local0. "$fullRequest"
+    #log local0. "response $rbody"
+    log local0. "The IP: $User_IPaddress Was Add to DG"  	
+    #log local0. " This ip was on the DG?  [ACCESS::session data get "session.custom.ip"]"
+
+     }
+   }
+}
