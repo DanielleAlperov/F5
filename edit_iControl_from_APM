@@ -36,7 +36,7 @@ when ACCESS_POLICY_AGENT_EVENT {
     }
     append fullRequest ",\{\"name\": \"$User_IPaddress\", \"data\": \"\"\}\]\}"
 
-    set status [call /Common/HSSR::http_req -state hstate -uri "http://127.0.0.1:8100/mgmt/tm/ltm/data-group/internal/~Common~My_DG" -method PATCH -type "application/json; charset=utf-8" -body $fullRequest -rbody rbody -userid danielle -passwd Dandan4693dd ]
+    set status [call /Common/HSSR::http_req -state hstate -uri "http://127.0.0.1:8100/mgmt/tm/ltm/data-group/internal/~Common~My_DG" -method PATCH -type "application/json; charset=utf-8" -body $fullRequest -rbody rbody -userid <USER> -passwd <PASS> ]
 
     if {$rbody contains "errorStack" } {
     ACCESS::session data set session.custom.added.ip "No"
